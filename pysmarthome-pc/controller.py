@@ -1,13 +1,18 @@
-from pysmarthome import DeviceController
+from pysmarthome import MultiCommandDeviceController, MultiCommandDevicesModel
+from pysmarthome import CommandsModel
 import wakeonlan
 import requests
 import json
 import os
-from .model import PcsModel
 
 
-class PcController(DeviceController):
-    model_class = PcsModel
+class PcController(MultiCommandDeviceController):
+    model_class = MultiCommandDevicesModel.clone('PcsModel')
+    model_class.schema |= {
+        'mac_addr': { 'type': 'string' },
+        'actions_handler_addr': { 'type': 'string' },
+        'actions_handler_api_key': { 'type': 'string' },
+    }
 
 
     def on(self):
@@ -18,24 +23,14 @@ class PcController(DeviceController):
         self.dispatch('off')
 
 
-    def get_power(self):
-        ping_cmd = self.model.ping_cmd
-        if ping_cmd:
-            addr = self.model.addr
-            return 'off' if os.system(f'{ping_cmd} {addr} &>/dev/null') else 'on'
-        return super().get_power()
-
-
-    def dispatch(self, action_id=''):
-        action = self.model.actions.get(action_id)
-
-        addr = self.model.actions_handler['addr']
-        path = action['path']
-        api_key = self.model.actions_handler['api_key']
+    def send_command(self, id):
+        action = CommandsModel.load(id)
+        addr = self.model.actions_handler_addr
+        api_key = self.model.actions_handler_api_key
         data = action['data']
 
         return requests.post(
-            f'http://{addr}/{path}',
+            f'http://{addr}',
             headers = {
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Accept': 'application/json',
