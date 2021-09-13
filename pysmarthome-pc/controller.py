@@ -1,5 +1,5 @@
 from pysmarthome import MultiCommandDeviceController, MultiCommandDevicesModel
-from pysmarthome import CommandsModel
+from pysmarthome import Model, CommandsModel
 import wakeonlan
 import requests
 import json
@@ -7,7 +7,7 @@ import os
 
 
 class PcController(MultiCommandDeviceController):
-    model_class = MultiCommandDevicesModel.clone('PcsModel')
+    model_class = Model.extends(MultiCommandDevicesModel, name='PcsModel')
     model_class.schema |= {
         'mac_addr': { 'type': 'string' },
         'actions_handler_addr': { 'type': 'string' },
