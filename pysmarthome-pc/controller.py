@@ -20,7 +20,7 @@ class PcController(MultiCommandDeviceController):
 
 
     def off(self):
-        self.dispatch('off')
+        self.send_command('off')
 
 
     def send_command(self, id):
